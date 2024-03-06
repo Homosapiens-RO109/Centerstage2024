@@ -38,6 +38,7 @@ public class Coaca extends LinearOpMode {
     static double msin, mcos, mmax, x,y, tetha, putere, turn;
 
     public void runOpMode() throws InterruptedException {
+        // test
         MotorFL = hardwareMap.get(DcMotor.class, "stsus");
         MotorFR = hardwareMap.get(DcMotor.class, "drsus");
         MotorRL = hardwareMap.get(DcMotor.class, "stjos");
