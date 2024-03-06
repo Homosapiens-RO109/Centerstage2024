@@ -28,14 +28,13 @@ import com.qualcomm.robotcore.util.Range;
 public class Coaca extends LinearOpMode {
     public static double kp = 0.001, ki, kd,kfst,kfdr, pos_servoin = 0, pos_servopus = 0.41, servo_error = 0.01,pos_servoluat = 0.20;
     public static int target = 0,timerin,timersvin;
+    double msin,mcos,maxi,thetha,putere,turn,mx,my;
     PIDController controller;
     FtcDashboard dashboard;
     private DcMotor MotorGl, MotorGr, MotorFL, MotorFR, MotorRL, MotorRR, Motorin;
     private Servo ServoL, ServoR, Servoin;
     public boolean ok;
     public final double ticks_in_degree = 532/360.0;
-
-    static double msin, mcos, mmax, x,y, tetha, putere, turn;
 
     public void runOpMode() throws InterruptedException {
         MotorFL = hardwareMap.get(DcMotor.class, "stsus");
@@ -71,17 +70,32 @@ public class Coaca extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            //hello
-            x = gamepad1.left_stick_x;
-            y = -gamepad1.left_stick_y;
+            mx = gamepad1.left_stick_x;
+            my = gamepad1.left_stick_y;
             turn = gamepad1.right_trigger - gamepad1.left_trigger;
 
-            double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(turn), 1);
-            double PutereFL = (y - x + turn)/denominator;
-            double PutereFR = (y + x - turn)/denominator;
-            double PutereRL = (y + x + turn)/denominator;
-            double PutereRR = (y - x - turn)/denominator;
-            // hello
+            thetha = Math.atan2(my, mx);
+            putere = Math.hypot(mx, my);
+            msin = Math.sin(thetha - Math.PI/4);
+            mcos = Math.cos(thetha - Math.PI/4);
+            maxi = Math.max(Math.abs(msin), Math.abs(mcos));
+            double PutereFL = putere * mcos/maxi + turn;
+            double PutereFR = putere * msin/maxi - turn;
+            double PutereRL = putere * msin/maxi + turn;
+            double PutereRR = putere * mcos/maxi - turn;
+
+            if((putere + Math.abs(turn)) > 1)
+            {
+                PutereFL /= putere + turn;
+                PutereFR /= putere + turn;
+                PutereRL /= putere + turn;
+                PutereRR /= putere + turn;
+            }
+
+            MotorFL.setPower(PutereFL);
+            MotorFR.setPower(PutereFR);
+            MotorRL.setPower(PutereRL);
+            MotorRR.setPower(PutereRR);
             /*
             double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
             double frontLeftPower = -((y - x + rx) / denominator);
