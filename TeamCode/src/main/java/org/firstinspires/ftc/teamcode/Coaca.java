@@ -10,7 +10,6 @@ import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -26,15 +25,16 @@ import com.qualcomm.robotcore.util.Range;
 @Config
 @TeleOp
 public class Coaca extends LinearOpMode {
-    public static double kp = 0.001, ki, kd,kfst,kfdr, pos_servoin = 0, pos_servopus = 0.41, servo_error = 0.01,pos_servoluat = 0.20;
+    public static double kp = 0.001, ki, kd,kfst,kfdr, pos_servoin = 0, pos_servopus = 0.48, servo_error = 0.01,pos_servoluat = 0.20,aveon = 0;
     public static int target = 0,timerin,timersvin;
-    double msin,mcos,maxi,thetha,putere,turn,mx,my;
     PIDController controller;
     FtcDashboard dashboard;
     private DcMotor MotorGl, MotorGr, MotorFL, MotorFR, MotorRL, MotorRR, Motorin;
-    private Servo ServoL, ServoR, Servoin;
+    private Servo ServoL, ServoR, Servoin, Servoavion;
     public boolean ok;
     public final double ticks_in_degree = 532/360.0;
+
+    static double msin, mcos, mmax, x,y, tetha, putere, turn;
 
     public void runOpMode() throws InterruptedException {
         MotorFL = hardwareMap.get(DcMotor.class, "stsus");
@@ -48,6 +48,7 @@ public class Coaca extends LinearOpMode {
         ServoL = hardwareMap.get(Servo.class, "servost");
         ServoR = hardwareMap.get(Servo.class, "servodr");
         Servoin = hardwareMap.get(Servo.class, "servoin");
+        Servoavion = hardwareMap.get(Servo.class, "avion");
         ServoR.setDirection(Servo.Direction.REVERSE);
 
         dashboard = FtcDashboard.getInstance();
@@ -65,37 +66,26 @@ public class Coaca extends LinearOpMode {
         MotorGl.setDirection(DcMotorSimple.Direction.REVERSE);
         ServoL.setPosition(pos_servoluat + servo_error);
         ServoR.setPosition(pos_servoluat);
+
+        MotorFL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        MotorFR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        MotorRL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        MotorRR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         Servoin.setPosition(0.4);
         ok=true;
         waitForStart();
 
         while (opModeIsActive()) {
-            mx = gamepad1.left_stick_x;
-            my = gamepad1.left_stick_y;
-            turn = gamepad1.right_trigger - gamepad1.left_trigger;
+            x = gamepad1.left_stick_x * 0.8;
+            y = -gamepad1.left_stick_y * 0.8;
+            turn = (gamepad1.right_trigger - gamepad1.left_trigger) * 0.6;
 
-            thetha = Math.atan2(my, mx);
-            putere = Math.hypot(mx, my);
-            msin = Math.sin(thetha - Math.PI/4);
-            mcos = Math.cos(thetha - Math.PI/4);
-            maxi = Math.max(Math.abs(msin), Math.abs(mcos));
-            double PutereFL = putere * mcos/maxi + turn;
-            double PutereFR = putere * msin/maxi - turn;
-            double PutereRL = putere * msin/maxi + turn;
-            double PutereRR = putere * mcos/maxi - turn;
-
-            if((putere + Math.abs(turn)) > 1)
-            {
-                PutereFL /= putere + turn;
-                PutereFR /= putere + turn;
-                PutereRL /= putere + turn;
-                PutereRR /= putere + turn;
-            }
-
-            MotorFL.setPower(PutereFL);
-            MotorFR.setPower(PutereFR);
-            MotorRL.setPower(PutereRL);
-            MotorRR.setPower(PutereRR);
+            double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(turn), 1);
+            double PutereFL = (y + x + turn)/denominator;
+            double PutereFR = (y - x - turn)/denominator;
+            double PutereRL = (y - x + turn)/denominator;
+            double PutereRR = (y + x - turn)/denominator;
             /*
             double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
             double frontLeftPower = -((y - x + rx) / denominator);
@@ -123,10 +113,10 @@ public class Coaca extends LinearOpMode {
 //                PutereRR /= putere + turn;
 //            }
 
-            MotorFL.setPower(PutereFL * 0.7);
-            MotorFR.setPower(PutereFR * 0.7);
-            MotorRL.setPower(PutereRL * 0.7);
-            MotorRR.setPower(PutereRR * 0.7);
+            MotorFL.setPower(PutereFL);
+            MotorFR.setPower(PutereFR);
+            MotorRL.setPower(PutereRL);
+            MotorRR.setPower(PutereRR);
 
 
             controller.setPID(kp, ki, kd);
@@ -147,6 +137,9 @@ public class Coaca extends LinearOpMode {
                 ServoL.setPosition(pos_servopus + servo_error);
                 ServoR.setPosition(pos_servopus);
             }
+
+            if(gamepad1.dpad_down)
+                Servoavion.setPosition(0.8);
 
             if(Motorin.getPower() == 0) {
                 if(timerin > 15) {
@@ -169,12 +162,12 @@ public class Coaca extends LinearOpMode {
                 }
             }
 
-            if(MotorGl.getCurrentPosition() > -1000 && MotorGl.getPower() > 0 && !ok)
+            if(MotorGl.getCurrentPosition() > -1000 && !ok)
             {
                 Servoin.setPosition(0.4);
                 ok = true;
             }
-            if(MotorGl.getCurrentPosition() < -1000 && MotorGl.getPower() < 0)
+            if(MotorGl.getCurrentPosition() < -1000)
             {
                 Servoin.setPosition(0);
                 ok = false;

@@ -1,11 +1,17 @@
 package org.firstinspires.ftc.teamcode.Autonomie;
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -18,7 +24,7 @@ public class Camera_Blue_Frontstage extends LinearOpMode{
     final int ticks_motorFL = 536, ticks_motorFR = 529, ticks_motorRL = 538, ticks_motorRR = 525;
     DcMotor motorFL,motorFR, motorRL, motorRR, motorRoata, motorGL, motorGR;
     Servo servoBD, servoBS, servowr;
-    int pas = 0;
+    int pas = 0,timere=0;
     @Override
     public void runOpMode() throws InterruptedException {
         motorFL = hardwareMap.get(DcMotor.class, "stsus");
@@ -27,17 +33,20 @@ public class Camera_Blue_Frontstage extends LinearOpMode{
         motorRR = hardwareMap.get(DcMotor.class, "drjos");
         motorGL = hardwareMap.get(DcMotor.class, "glis1");
         motorGR = hardwareMap.get(DcMotor.class, "glis2");
-        motorRoata = hardwareMap.get(DcMotor.class, "m_roata");
+        motorRoata = hardwareMap.get(DcMotor.class, "motorin");
 
-        servoBD = hardwareMap.get(Servo.class, "Servobd");
-        servoBS = hardwareMap.get(Servo.class, "Servobs");
-        servowr = hardwareMap.get(Servo.class, "Servowr");
+        servoBD = hardwareMap.get(Servo.class, "servodr");
+        servoBS = hardwareMap.get(Servo.class, "servost");
+        servowr = hardwareMap.get(Servo.class, "servoin");
 
         motorFL.setDirection(DcMotor.Direction.REVERSE);
         motorFR.setDirection(DcMotor.Direction.FORWARD);
         motorRL.setDirection(DcMotor.Direction.REVERSE);
         motorRR.setDirection(DcMotor.Direction.FORWARD);
         motorRoata.setDirection(DcMotor.Direction.REVERSE);
+
+        servoBD.setDirection(Servo.Direction.REVERSE);
+        motorGL.setDirection(DcMotorSimple.Direction.REVERSE);
 
         WebcamName webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
         int webcamID = hardwareMap.appContext.getResources().getIdentifier("webcamID", "id", hardwareMap.appContext.getPackageName());
@@ -68,6 +77,7 @@ public class Camera_Blue_Frontstage extends LinearOpMode{
 
         while(opModeIsActive())
         {
+            SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
             if(pozitie == Pipeline_Blue.SkystonePosition.LEFT)
             {
                 {
@@ -105,22 +115,39 @@ public class Camera_Blue_Frontstage extends LinearOpMode{
                 // to do: pus pixel
             }
             else
-            if(pozitie == Pipeline_Blue.SkystonePosition.CENTER)
+            if(pozitie == Pipeline_Blue.SkystonePosition.CENTER && pas == 0)
             {
-                if(pas == 0){
-                    DriveBackwards(2.5);
-                    sleep(1800);
-                    DriveForward(0.45);
-                    pas++;
-                }
-                if(pas == 1 && !motorFL.isBusy()) {
-                    pas++;
-                    motorRoata.setPower(-1);
-                    sleep(500);
-                    motorRoata.setPower(0);
-                    DriveForward(0.2);
-                }
-                // to do: pus pixel
+                TrajectorySequence myTraj = drive.trajectorySequenceBuilder(new Pose2d())
+                        .splineToConstantHeading(new Vector2d(28, 0), 0)
+                        .waitSeconds(0.5)
+                        .splineToConstantHeading(new Vector2d(26, 0), 0)
+                        .addDisplacementMarker(() -> {
+                            motorRoata.setPower(-0.5);
+                        })
+                        .waitSeconds(1)
+                        .splineToConstantHeading(new Vector2d(23, 0), 0)
+                        .addDisplacementMarker(() -> {
+                            motorRoata.setPower(0);
+                        })
+//                        .turn(Math.toRadians(-90))
+//                        .addDisplacementMarker(() -> {
+//                            motorGL.setPower(1);
+//                            motorGR.setPower(1);
+//                        }) -> Pid mi e prea somn sa fac :3
+                        .waitSeconds(1)
+                        .splineToConstantHeading(new Vector2d(-20, 0), 0)
+                        .waitSeconds(1)
+                        .splineToConstantHeading(new Vector2d(-20, 10), 0)
+                        .waitSeconds(1)
+                        .splineToConstantHeading(new Vector2d(-30, 10), 0)
+                        .build();
+                drive.followTrajectorySequence(myTraj);
+                Pose2d poseEstimate = drive.getPoseEstimate();
+                telemetry.addData("x", poseEstimate.getX());
+                telemetry.addData("y", poseEstimate.getY());
+                telemetry.addData("heading", poseEstimate.getHeading());
+                telemetry.update();
+                pas++;
             }
             else
             if(pozitie == Pipeline_Blue.SkystonePosition.RIGHT)
@@ -155,7 +182,6 @@ public class Camera_Blue_Frontstage extends LinearOpMode{
                     pas++;
                 }
             }
-
 
         }
 
