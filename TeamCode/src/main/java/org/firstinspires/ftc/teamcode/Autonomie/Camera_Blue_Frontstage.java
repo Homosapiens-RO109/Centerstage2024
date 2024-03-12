@@ -1,8 +1,11 @@
 package org.firstinspires.ftc.teamcode.Autonomie;
 
+import android.graphics.drawable.VectorDrawable;
+
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -12,6 +15,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -19,14 +23,20 @@ import org.openftc.easyopencv.OpenCvWebcam;
 
 @Autonomous(name = "Blue_Detection_Frontstage")
 public class Camera_Blue_Frontstage extends LinearOpMode{
+    public static double kp = 0.001, ki, kd,kfst,kfdr, pos_servoin = 0, pos_servopus = 0.48, servo_error = 0.01,pos_servoBSuat = 0.20,aveon = 0;
+    public static int target = 0,timerin,timersvin;
+    public final double ticks_in_degree = 532/360.0;
+    PIDController controller;
     Pipeline_Blue detection = new Pipeline_Blue();
     OpenCvWebcam webcam;
     final int ticks_motorFL = 536, ticks_motorFR = 529, ticks_motorRL = 538, ticks_motorRR = 525;
     DcMotor motorFL,motorFR, motorRL, motorRR, motorRoata, motorGL, motorGR;
-    Servo servoBD, servoBS, servowr;
-    int pas = 0,timere=0;
+    Servo servoBD, servoBS, servoin;
+    boolean ok = true;
+    int pas = 0,timer=0;
     @Override
     public void runOpMode() throws InterruptedException {
+        controller = new PIDController(kp, ki, kd);
         motorFL = hardwareMap.get(DcMotor.class, "stsus");
         motorFR = hardwareMap.get(DcMotor.class, "drsus");
         motorRL = hardwareMap.get(DcMotor.class, "stjos");
@@ -37,7 +47,7 @@ public class Camera_Blue_Frontstage extends LinearOpMode{
 
         servoBD = hardwareMap.get(Servo.class, "servodr");
         servoBS = hardwareMap.get(Servo.class, "servost");
-        servowr = hardwareMap.get(Servo.class, "servoin");
+        servoin = hardwareMap.get(Servo.class, "servoin");
 
         motorFL.setDirection(DcMotor.Direction.REVERSE);
         motorFR.setDirection(DcMotor.Direction.FORWARD);
@@ -77,110 +87,141 @@ public class Camera_Blue_Frontstage extends LinearOpMode{
 
         while(opModeIsActive())
         {
+//            controller.setPID(kp, ki, kd);
+//            double power = controller.calculate(motorGL.getCurrentPosition(), target);
+//            double power2 = controller.calculate(motorGR.getCurrentPosition(), target);
+//            double Kff = Math.cos(Math.toRadians(target / ticks_in_degree)) * kfst;
+//            double Kff2 = Math.cos(Math.toRadians(target / ticks_in_degree)) * kfdr;
+//            motorGL.setPower(power + Kff);
+//            motorGR.setPower(power2 + Kff2);
+//
+//            if(motorGL.getCurrentPosition() > -2000)
+//            {
+//                servoBS.setPosition(pos_servoBSuat + servo_error);
+//                servoBD.setPosition(pos_servoBSuat);
+//            }
+//            if(motorGL.getCurrentPosition() < -1900)
+//            {
+//                servoBS.setPosition(pos_servopus + servo_error);
+//                servoBD.setPosition(pos_servopus);
+//            }
             SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-            if(pozitie == Pipeline_Blue.SkystonePosition.LEFT)
+            if(pozitie == Pipeline_Blue.SkystonePosition.LEFT && pas == 0)
             {
-                {
-                    if(pas == 0){
-                        DriveBackwards(1.8);
-                        pas++;
-                    }
-
-                    if(pas == 1 && !motorFL.isBusy())
-                    {
-                        DriveRight(1);
-                        pas++;
-                    }
-
-                    if(pas == 2 && !motorFL.isBusy())
-                    {
-                        DriveForward(0.4);
-                        motorRoata.setPower(-0.8);
-                        sleep(500);
-                        motorRoata.setPower(0);
-                        pas++;
-                    }
-
-                    if(pas == 3)
-                    {
-                        stop_motors();
-                        pas++;
-                    }
-//                if(pas == 3)
-//                {
-//                    RotateLeft(2);
-//                    pas++;
-//                }
-                }
-                // to do: pus pixel
+                TrajectorySequence TrajDr = drive.trajectorySequenceBuilder(new Pose2d())
+                        .lineToConstantHeading(new Vector2d(30, 15))
+                        .waitSeconds(0.5)
+                        .lineToConstantHeading(new Vector2d(28, 22))
+                        .lineToLinearHeading(new Pose2d(28.1,22,Math.toRadians(-90)))
+                        .addDisplacementMarker(() -> {
+                            motorRoata.setPower(-0.5);
+                        })
+                        .waitSeconds(1)
+                        .lineToConstantHeading(new Vector2d(25, 22))
+                        .addDisplacementMarker(() -> {
+                            motorRoata.setPower(0);
+                        })
+                        .waitSeconds(1)
+                        .build();
+                drive.followTrajectorySequence(TrajDr);
+                pas ++;
             }
             else
             if(pozitie == Pipeline_Blue.SkystonePosition.CENTER && pas == 0)
             {
                 TrajectorySequence myTraj = drive.trajectorySequenceBuilder(new Pose2d())
-                        .splineToConstantHeading(new Vector2d(28, 0), 0)
+                        .lineToConstantHeading(new Vector2d(30, 0))
                         .waitSeconds(0.5)
-                        .splineToConstantHeading(new Vector2d(26, 0), 0)
+                        .lineToConstantHeading(new Vector2d(28, 0))
                         .addDisplacementMarker(() -> {
                             motorRoata.setPower(-0.5);
                         })
                         .waitSeconds(1)
-                        .splineToConstantHeading(new Vector2d(23, 0), 0)
+                        .lineToConstantHeading(new Vector2d(25, 0))
                         .addDisplacementMarker(() -> {
                             motorRoata.setPower(0);
                         })
-//                        .turn(Math.toRadians(-90))
-//                        .addDisplacementMarker(() -> {
-//                            motorGL.setPower(1);
-//                            motorGR.setPower(1);
-//                        }) -> Pid mi e prea somn sa fac :3
                         .waitSeconds(1)
-                        .splineToConstantHeading(new Vector2d(-20, 0), 0)
-                        .waitSeconds(1)
-                        .splineToConstantHeading(new Vector2d(-20, 10), 0)
-                        .waitSeconds(1)
-                        .splineToConstantHeading(new Vector2d(-30, 10), 0)
+//                        .lineToConstantHeading(new Vector2d(25,38))
+//                        .waitSeconds(1)
+//                        .lineToLinearHeading(new Pose2d(25.1,40,Math.toRadians(-90)))
+//                        .waitSeconds(1)
+//                        .lineToConstantHeading(new Vector2d(23,40))
+
+//                        .waitSeconds(1)
+//                        .lineToConstantHeading(new Vector2d(0,42))
+                        .build();
+                TrajectorySequence myTraj2 = drive.trajectorySequenceBuilder(new Pose2d())
+                        .lineToConstantHeading(new Vector2d(1,0))
+                        .addDisplacementMarker(() -> {
+                            while(timer < 1000)
+                            {
+                                if(timer > 300) {
+                                    servoin.setPosition(0.4);
+                                }
+                                else servoin.setPosition(0);
+
+                                if(timer > 10)
+                                    target = -2700;
+
+                                if(timer > 500)
+                                    target = 0;
+
+//                                controller.setPID(kp, ki, kd);
+//                                double power = controller.calculate(motorGL.getCurrentPosition(), target);
+//                                double power2 = controller.calculate(motorGR.getCurrentPosition(), target);
+//                                double Kff = Math.cos(Math.toRadians(target / ticks_in_degree)) * kfst;
+//                                double Kff2 = Math.cos(Math.toRadians(target / ticks_in_degree)) * kfdr;
+//                                motorGL.setPower(power + Kff);
+//                                motorGR.setPower(power2 + Kff2);
+
+                                if(motorGL.getCurrentPosition() > -2000)
+                                {
+                                    servoBS.setPosition(pos_servoBSuat + servo_error);
+                                    servoBD.setPosition(pos_servoBSuat);
+                                }
+                                if(motorGL.getCurrentPosition() < -1900)
+                                {
+                                    servoBS.setPosition(pos_servopus + servo_error);
+                                    servoBD.setPosition(pos_servopus);
+                                }
+
+                                timer++;
+                                telemetry.addData("Timer ", timer);
+                                telemetry.addData("GlisST ", motorGL.getCurrentPosition());
+                                telemetry.addData("ServoIN ", servoin.getPosition());
+                                telemetry.addData("Target ", target);
+                                telemetry.update();
+                            }
+                        })
                         .build();
                 drive.followTrajectorySequence(myTraj);
                 Pose2d poseEstimate = drive.getPoseEstimate();
                 telemetry.addData("x", poseEstimate.getX());
                 telemetry.addData("y", poseEstimate.getY());
                 telemetry.addData("heading", poseEstimate.getHeading());
-                telemetry.update();
                 pas++;
             }
             else
-            if(pozitie == Pipeline_Blue.SkystonePosition.RIGHT)
+            if(pozitie == Pipeline_Blue.SkystonePosition.RIGHT && pas == 0)
             {
-                if(pas == 0){
-                    DriveBackwards(2.3);
-                    pas++;
-                }
-
-                if(pas == 1 && !motorFL.isBusy())
-                {
-                    pas++;
-                    DriveRight(0.4);
-                }
-
-                if(pas == 2 && !motorFL.isBusy())
-                {
-                    RotateRight(2);
-                    pas++;
-                }
-
-                if(pas == 3 && !motorFL.isBusy())
-                {
-                    DriveBackwards(0.2);
-                    pas++;
-                }
-
-                if(pas == 4 && !motorFL.isBusy()) {
-                    motorRoata.setPower(-1);
-                    sleep(500);
-                    motorRoata.setPower(0);
-                    pas++;
-                }
+                TrajectorySequence TrajDr = drive.trajectorySequenceBuilder(new Pose2d())
+                        .lineToConstantHeading(new Vector2d(28, -15))
+                        .waitSeconds(0.5)
+                        .lineToConstantHeading(new Vector2d(26, 0))
+                        .lineToLinearHeading(new Pose2d(26.1,0,Math.toRadians(-90)))
+                        .addDisplacementMarker(() -> {
+                            motorRoata.setPower(-0.5);
+                        })
+                        .waitSeconds(1)
+                        .lineToConstantHeading(new Vector2d(23, 0))
+                        .addDisplacementMarker(() -> {
+                            motorRoata.setPower(0);
+                        })
+                        .waitSeconds(1)
+                        .build();
+                drive.followTrajectorySequence(TrajDr);
+                pas ++;
             }
 
         }

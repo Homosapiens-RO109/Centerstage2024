@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 
 import com.arcrobotics.ftclib.hardware.motors.Motor;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -24,7 +25,7 @@ import com.qualcomm.ftccommon.FtcEventLoop;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.Range;
 
-
+@Disabled
 @Config
 @TeleOp
 public class  DriveRobotBased extends LinearOpMode {

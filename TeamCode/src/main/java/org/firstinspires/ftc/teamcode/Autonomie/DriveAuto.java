@@ -1,9 +1,10 @@
 package org.firstinspires.ftc.teamcode.Autonomie;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
-
+@Disabled
 public class DriveAuto {
     public DcMotor motorFL, motorRL, motorFR, motorRR, motorRoata, motorGL, motorGR;
     public Servo servoBS, servoBD, servowr;

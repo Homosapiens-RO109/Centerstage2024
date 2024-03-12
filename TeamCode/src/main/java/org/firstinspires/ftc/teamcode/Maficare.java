@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 
-import com.arcrobotics.ftclib.hardware.motors.Motor;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -13,19 +11,12 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import java.lang.reflect.MalformedParameterizedTypeException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import org.firstinspires.ftc.teamcode.Autonomie.Pose;
 
-import com.qualcomm.robotcore.eventloop.EventLoop;
-import com.qualcomm.ftccommon.FtcEventLoop;
-import com.qualcomm.robotcore.hardware.VoltageSensor;
-import com.qualcomm.robotcore.util.Range;
 @Config
 @TeleOp
-public class Coaca extends LinearOpMode {
-    public static double kp = 0.001, ki, kd,kfst,kfdr, pos_servoin = 0, pos_servopus = 0.48, servo_error = 0.01,pos_servoluat = 0.20,aveon = 0;
+public class Maficare extends LinearOpMode {
+    public static double kp = 0.001, ki, kd,kfst,kfdr, pos_servoin = 0, pos_servopus = 0.48, servo_error = 0.01,pos_servoluat = 0.20,aveon = 0,test;
     public static int target = 0,timerin,timersvin;
     PIDController controller;
     FtcDashboard dashboard;
@@ -50,15 +41,16 @@ public class Coaca extends LinearOpMode {
         Servoin = hardwareMap.get(Servo.class, "servoin");
         Servoavion = hardwareMap.get(Servo.class, "avion");
         ServoR.setDirection(Servo.Direction.REVERSE);
+        Servoavion.setDirection(Servo.Direction.REVERSE);
 
         dashboard = FtcDashboard.getInstance();
         controller = new PIDController(kp, ki, kd);
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        MotorGl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        MotorGl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        MotorGr.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        MotorGr.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        MotorGl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        MotorGl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        MotorGr.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        MotorGr.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         MotorFL.setDirection(DcMotorSimple.Direction.REVERSE);
         MotorRL.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -126,7 +118,7 @@ public class Coaca extends LinearOpMode {
             double Kff2 = Math.cos(Math.toRadians(target / ticks_in_degree)) * kfdr;
             MotorGl.setPower(power + Kff);
             MotorGr.setPower(power2 + Kff2);
-
+            test = Pose.pozo;
             if(MotorGl.getCurrentPosition() > -1500 && MotorGl.getPower() > 0)
             {
                 ServoL.setPosition(pos_servoluat + servo_error);
@@ -137,6 +129,7 @@ public class Coaca extends LinearOpMode {
                 ServoL.setPosition(pos_servopus + servo_error);
                 ServoR.setPosition(pos_servopus);
             }
+
 
             if(gamepad1.dpad_down)
                 Servoavion.setPosition(0.8);
@@ -162,12 +155,12 @@ public class Coaca extends LinearOpMode {
                 }
             }
 
-            if(MotorGl.getCurrentPosition() > -1000 && !ok)
+            if(MotorGl.getCurrentPosition() > -1000 && MotorGl.getPower() < 0 && !ok)
             {
                 Servoin.setPosition(0.4);
                 ok = true;
             }
-            if(MotorGl.getCurrentPosition() < -1000)
+            if(MotorGl.getCurrentPosition() < -1000 && MotorGl.getPower() < 0)
             {
                 Servoin.setPosition(0);
                 ok = false;
@@ -210,6 +203,8 @@ public class Coaca extends LinearOpMode {
             telemetry.addData("y pow", MotorGl.getPower());
             telemetry.addData("timer", timerin);
             telemetry.addData("timer servo intake", timersvin);
+            telemetry.addData("servoin", Servoin.getPosition());
+            telemetry.addData("test", test);
             telemetry.update();
         }
     }
