@@ -14,7 +14,9 @@ public class robot_TeleOp extends LinearOpMode {
         while(opModeIsActive()) {
             drive.movement();
             intake.power();
-            outtake.Glis_pid();
+            outtake.SlidersPID();
+            outtake.UseServos();
+            outtake.ExtendSliders(-gamepad1.right_stick_y * 50);
         }
     }
 }
