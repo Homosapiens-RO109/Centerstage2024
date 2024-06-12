@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 @Config
 public class robot_drive {
-    FtcDashboard dashboard;
     HardwareMap hardwareMap;
     Gamepad gamepad1;
     public DcMotor motorLeftFront, motorLeftBack, motorRightFront, motorRightBack;
@@ -28,7 +27,6 @@ public class robot_drive {
         motorRightBack = hardwareMap.get(DcMotor.class, "drjos");
         motorRightFront.setDirection(DcMotorSimple.Direction.REVERSE);
         motorRightBack.setDirection(DcMotorSimple.Direction.REVERSE);
-        dashboard = FtcDashboard.getInstance();
     }
 
     public void movement() {
