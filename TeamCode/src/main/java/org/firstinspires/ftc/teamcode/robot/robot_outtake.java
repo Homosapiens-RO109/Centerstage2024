@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.apache.commons.math3.analysis.function.Min;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @Config
 public class robot_outtake {
@@ -46,23 +47,13 @@ public class robot_outtake {
         ServoWrist = hardwareMap.get(Servo.class, "servowrist");
         target = 0;
         ServoRight.setDirection(Servo.Direction.REVERSE);
-
+        ServoRight.setPosition(0);
+        ServoLeft.setPosition(0);
         pid = new PIDController(kp, ki, kd);
         dashboard = FtcDashboard.getInstance();
     }
     boolean SlidersExtended() {
         return target > EXTEND_RANGE;
-    }
-    boolean SlidersWithinRange(double target) {
-        return target >= MIN_RANGE_SLIDERS && target <= MAX_RANGE_SLIDERS;
-    }
-    
-    boolean SlidersOutOfRange(double target) {
-        return target < MIN_RANGE_SLIDERS || target > MAX_RANGE_SLIDERS;
-    }
-    
-    boolean InputInRange(double target, double value) {
-        return target + value >= MIN_RANGE_SLIDERS && target + value <= MAX_RANGE_SLIDERS;
     }
 
     public void TargetForceStop(double multiplier) {
@@ -76,9 +67,7 @@ public class robot_outtake {
             target = MotorLeftSlider.getCurrentPosition();
     }
     public void MoveSliders(double multiplier) {
-        if(SlidersWithinRange(target) || SlidersOutOfRange(target) && InputInRange(target, multiplier) )
-            target += multiplier;
-
+        target += multiplier;
         TargetForceStop(multiplier);
     }
     
