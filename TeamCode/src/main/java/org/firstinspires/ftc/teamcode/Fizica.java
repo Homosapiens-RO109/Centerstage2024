@@ -8,7 +8,7 @@ import org.apache.commons.math3.geometry.euclidean.twod.Line;
 
 @TeleOp
 public class Fizica extends LinearOpMode {
-    DcMotor motorFL, motorRR, motorRL, motorFR;
+    DcMotor motorFL, motorRR, motorRL, motorFR, motorRoata;
     double x, y, rt, powFL, powFR, powRL, powRR, den;
     @Override
     public void runOpMode() {
@@ -16,6 +16,7 @@ public class Fizica extends LinearOpMode {
         motorFR = hardwareMap.get(DcMotor.class, "motorFR");
         motorRL = hardwareMap.get(DcMotor.class, "motorRL");
         motorRR = hardwareMap.get(DcMotor.class, "motorRR");
+        motorRoata = hardwareMap.get(DcMotor.class, "motorRoata");
         motorFR.setDirection(DcMotor.Direction.REVERSE);
         motorRR.setDirection(DcMotor.Direction.REVERSE);
         waitForStart();
@@ -34,6 +35,12 @@ public class Fizica extends LinearOpMode {
             motorFR.setPower(powFR);
             motorRL.setPower(powRL);
             motorRR.setPower(powRR);
+
+            if(gamepad1.a)
+                motorRoata.setPower(1);
+
+            if(!gamepad1.a)
+                motorRoata.setPower(0);
         }
     }
 }
