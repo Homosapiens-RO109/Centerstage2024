@@ -18,11 +18,12 @@ public class robot_TeleOp extends LinearOpMode {
         waitForStart();
         while(opModeIsActive()) {
             drive.movement();
+            intake.timerIntake.startTime();
             intake.ControlIntake();
             outtake.SlidersPID();
             outtake.MoveSliders(-gamepad1.right_stick_y * 50);
             outtake.UseServos();
-            telemetry.addData("Target: ", outtake.target);
+            telemetry.addData("Target: ", robot_outtake.target);
             telemetry.addData("MotorGL: ", outtake.MotorLeftSlider.getCurrentPosition());
             telemetry.addData("ServoSt: ", outtake.ServoLeft.getPosition());
             telemetry.addData("ServoDr: ", outtake.ServoRight.getPosition());
