@@ -3,54 +3,63 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-@Disabled
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
+import java.sql.Time;
+import java.util.concurrent.TimeUnit;
 @TeleOp
 public class Test extends LinearOpMode {
-    private DcMotor Stsus,Stjos,Drsus,Drjos;
-    boolean coi=true;
+    private DcMotor MotorIn;
+    private CRServo servoras;
+    ElapsedTime timerIntake = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
+
+    public int p00la = 0;
+
+    public static double niv1 = 0.25, niv2 = 0.5, niv3 = 0.75, niv4 = 1;
+
+
     @Override
     public void runOpMode() throws InterruptedException {
-        Stsus = hardwareMap.get(DcMotor.class, "stsus");
-        Stjos = hardwareMap.get(DcMotor.class, "stjos");
-        Drsus = hardwareMap.get(DcMotor.class, "drsus");
-        Drjos = hardwareMap.get(DcMotor.class, "drjos");
+//        MotorIn = hardwareMap.get(DcMotor.class, "motor");
+        servoras = hardwareMap.get(CRServo.class, "sirbulici");
 
-        Drsus.setDirection(DcMotorSimple.Direction.REVERSE);
-        Drjos.setDirection(DcMotorSimple.Direction.REVERSE);
+        servoras.resetDeviceConfigurationForOpMode();
+
+
         waitForStart();
-        if(isStopRequested())
-            return;
+
+        if(opModeIsActive())
+            timerIntake.startTime();
+
         while(opModeIsActive()) {
-            double y = -gamepad1.left_stick_y;
-            double x = gamepad1.left_stick_x;
-            double rx = gamepad1.right_trigger - gamepad1.left_trigger;
+            if(gamepad1.a)
+                servoras.setPower(1);
 
-            double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-            double frontLeftPower = (y + x + rx) / denominator;
-            double backLeftPower = (y - x + rx) / denominator;
-            double frontRightPower = (y - x - rx) / denominator;
-            double backRightPower = (y + x - rx) / denominator;
+            if(gamepad1.b)
+                servoras.setPower(-1);
 
-            if(gamepad1.b)      {
-                coi = true;
-            }
-            if(gamepad1.a) {
-                coi = false;
-            }
-            if(coi) {
-                Stsus.setPower(frontLeftPower);
-                Stjos.setPower(backLeftPower);
-                Drsus.setPower(frontRightPower);
-                Drjos.setPower(backRightPower);
-            }
-            else {
-                Stsus.setPower(frontLeftPower*0.7);
-                Stjos.setPower(backLeftPower*0.7);
-                Drsus.setPower(frontRightPower*0.7);
-                Drjos.setPower(backRightPower*0.7);
-            }
+//            if(gamepad1.a)
+//            {
+//                if(MotorIn.getPower() == 0 && timerIntake.time(TimeUnit.SECONDS) >=+ 1) {
+//                    MotorIn.setPower(1);
+//                    timerIntake.reset();
+//                }
+//
+//                if(MotorIn.getPower() != 0 && timerIntake.time(TimeUnit.SECONDS) >= 1) {
+//                    MotorIn.setPower(0);
+//                    timerIntake.reset();
+//                }
+//
+//            }
+//            p00la += gamepad1.right_stick_y*2;
+
+            telemetry.addData("Timer: ",timerIntake.time(TimeUnit.SECONDS));
+            telemetry.addData("Coaca: ", p00la);
+            telemetry.update();
         }
     }
 }

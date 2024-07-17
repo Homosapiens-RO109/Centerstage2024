@@ -38,7 +38,7 @@ public class robot_intake {
         timerIntake.reset();
     }
     public void ControlIntake() {
-        if(timerIntake.now(TimeUnit.SECONDS) > 1) {
+        if(timerIntake.time(TimeUnit.SECONDS) > 1) {
             if (motorIntake.getPower() == 0) {
                 if (gamepad1.left_bumper)
                     StartIntake(0.5);

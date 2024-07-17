@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package robotica;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -22,68 +22,46 @@ public class inteik{
 
     private DcMotor motorIn;
     private CRServo servoIn;
-    private Servo servoDrop;
+    public Servo servoDrop;
     Gamepad gamepad1;
-    HardwareMap hardwaremap;
-    ElapsedTime timerIntake = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
+    HardwareMap hardwareMap;
+    ElapsedTime timerIntake = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
     public inteik(HardwareMap hardwareMap, Gamepad gamepad1) {
-        this.hardwaremap = hardwaremap;
+        this.hardwareMap = hardwareMap;
         this.gamepad1 = gamepad1;
         hwmp();
     }
 
     void hwmp() {
-        motorIn = HardwareMap.get(DcMotor.class, "motorIN");
-        servoIn = HardwareMap.get(CRServo.class,"servoIN");
-        servoDrop = HardwareMap.get(Servo.class,"servoDrop");
+        motorIn = hardwareMap.get(DcMotor.class, "motorIN");
+        servoIn = hardwareMap.get(CRServo.class,"servoIN");
+        servoDrop = hardwareMap.get(Servo.class,"servoDrop");
+
+        servoDrop.setPosition(0);
     }
 
     void StartIn() {
-        servoDrop.setPosition(0);
+        servoDrop.setPosition(0.7);
         motorIn.setPower(1);
-        servoIn.setPower(1);
+        servoIn.setPower(-1);
         timerIntake.reset();
     }
 
     void StopIn() {
         servoDrop.setPosition(0);
         motorIn.setPower(0);
-        servoIn.setPower(0.5);
+        servoIn.setPower(0);
         timerIntake.reset();
     }
 
     public void ControlIn() {
         if(gamepad1.a)
         {
-            if(motorIn.getPower() == 0 && timerIntake.time(TimeUnit.SECONDS) >=+ 1)
+            if(motorIn.getPower() == 0 && timerIntake.time(TimeUnit.MILLISECONDS) >= 500)
                 StartIn();
-            if(motorIn.getPower() != 0 && timerIntake.time(TimeUnit.SECONDS) >= 1)
+            if(motorIn.getPower() != 0 && timerIntake.time(TimeUnit.MILLISECONDS) >= 500)
                 StopIn();
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
