@@ -40,7 +40,7 @@ public class robot_outtake {
         MotorLeftSlider.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         MotorLeftSlider.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         MotorRightSlider.setDirection(DcMotorSimple.Direction.REVERSE);
-
+        
         ServoLeft = hardwareMap.get(Servo.class, "servost");
         ServoRight = hardwareMap.get(Servo.class, "servodr");
         ServoBox = hardwareMap.get(Servo.class, "servobox");
