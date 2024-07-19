@@ -5,8 +5,6 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Gamepad;
-
 import java.util.concurrent.TimeUnit;
 
 @TeleOp
@@ -16,8 +14,6 @@ public class teleop extends LinearOpMode {
     public Outtake outtake;
     public Intake intake;
     public DDrive drive;
-
-
     @Override
     public void runOpMode() throws InterruptedException {
         intake = new Intake(hardwareMap);
@@ -25,10 +21,6 @@ public class teleop extends LinearOpMode {
         outtake = new Outtake(hardwareMap);
         dashboard = FtcDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-
-        while(opModeInInit()) {
-            outtake.init();
-        }
 
         waitForStart();
 
@@ -38,29 +30,28 @@ public class teleop extends LinearOpMode {
             drive.movement();
             outtake.PID();
             outtakecontrol();
+            telemetry.addData("Target", outtake.target);
+            telemetry.addData("Pozitie Slidere", outtake.motordr.getCurrentPosition());
+            telemetry.addData("Timer", intake.timer.time(TimeUnit.MILLISECONDS));
+            telemetry.update();
         }
     }
     public void intakecontrol() {
-        if(gamepad1.right_bumper && intake.timer.time(TimeUnit.MILLISECONDS) > 500) {
-            if(intake.motorin.getPower() == 0) {
+        if(gamepad1.right_bumper) {
+            if(intake.motorin.getPower() == 0  && intake.timer.time(TimeUnit.MILLISECONDS) > 500) {
                 intake.start_in();
-                intake.timer.reset();
             }
-            if(intake.motorin.getPower() != 0) {
+            if(intake.motorin.getPower() != 0  && intake.timer.time(TimeUnit.MILLISECONDS) > 500) {
                 intake.stop_in();
-                intake.timer.reset();
             }
         }
-        if(gamepad1.left_bumper && intake.timer.time(TimeUnit.MILLISECONDS) > 500) {
-            if(intake.motorin.getPower() == 0) {
+        if(gamepad1.left_bumper) {
+            if(intake.motorin.getPower() == 0 && intake.timer.time(TimeUnit.MILLISECONDS) > 500) {
                 intake.reverse_in();
-                intake.timer.reset();
             }
-            if(intake.motorin.getPower() != 0) {
+            if(intake.motorin.getPower() != 0 && intake.timer.time(TimeUnit.MILLISECONDS) > 500) {
                 intake.stop_in();
-                intake.timer.reset();
             }
-
         }
     }
     public void outtakecontrol() {
@@ -78,6 +69,9 @@ public class teleop extends LinearOpMode {
             if(gamepad1.dpad_left)
                 outtake.poz_4();
         }
-
+        if(gamepad1.a)
+            outtake.servoDegetica.setPosition(0.5);
+        if(gamepad1.b)
+            outtake.servoDegetica.setPosition(0);
     }
 }

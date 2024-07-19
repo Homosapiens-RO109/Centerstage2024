@@ -43,9 +43,9 @@ public class DDrive {
         powSS = (y - x + rt) / den;
         powSD = (y + x - rt) / den;
 
-        motorFS.setPower(powFS);
-        motorFD.setPower(powFD);
-        motorSS.setPower(powSS);
-        motorSD.setPower(powSD);
+        motorFS.setPower(powFS * 0.8);
+        motorFD.setPower(powFD * 0.8);
+        motorSS.setPower(powSS * 0.8);
+        motorSD.setPower(powSD * 0.8);
     }
 }

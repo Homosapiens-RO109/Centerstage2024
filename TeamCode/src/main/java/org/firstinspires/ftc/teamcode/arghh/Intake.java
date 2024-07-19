@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.arghh;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -24,12 +25,11 @@ public class Intake{
         this.motorin = hardwareMap.get(DcMotor.class, "min");
         this.servoin = hardwareMap.get(CRServo.class, "sin");
         this.servodrop = hardwareMap.get(Servo.class, "sd");
+        servoin.setDirection(DcMotorSimple.Direction.REVERSE);
         init();
     }
     public void init() {
         servodrop.setPosition(SERVO_SUS);
-        motorin.setPower(STOP_ROTIRE);
-        servoin.setPower(STOP_ROTIRE);
     }
     public void start_in() {
         servodrop.setPosition(SERVO_JOS);

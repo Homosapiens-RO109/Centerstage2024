@@ -5,7 +5,6 @@ import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -18,14 +17,14 @@ public class Outtake {
     final DcMotor motorst;
     final DcMotor motordr;
     public static double error = 0;
-    public static double kp = 0.0001;
-    public static double ki = 0;
-    public static double kd = 0;
+    public static double kp = 0.001;
+    public static double ki;
+    public static double kd;
     public static double kfst;
     public static double kfdr;
-    public static double SERVO_IN = 0.2;
+    public static double SERVO_IN = 0.21;
     public static double SERVO_OUT = 0.9;
-    public static double WRIST_IN = 0.1;
+    public static double WRIST_IN = 0.5;
     public static double WRIST_OUT = 0.1;
 
     public static int target;
@@ -46,7 +45,7 @@ public class Outtake {
         motordr.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motorst.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motorst.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motorst.setDirection(DcMotorSimple.Direction.REVERSE);
+        motordr.setDirection(DcMotorSimple.Direction.REVERSE);
         target = 0;
 
         this.servoSt =  hardwareMap.get(Servo.class,"sst");
@@ -57,6 +56,7 @@ public class Outtake {
         servoWrist.setDirection(Servo.Direction.REVERSE);
         pid = new PIDController(kp, ki, kd);
         dashboard = FtcDashboard.getInstance();
+        init();
     }
     public void init() {
         servoSt.setPosition(SERVO_IN);
@@ -80,13 +80,13 @@ public class Outtake {
         target = 0;
     }
     public void poz_2() {
-        target = 1000;
+        target = 1100;
     }
     public void poz_3() {
         target = 2000;
     }
     public void poz_4() {
-        target = 2500;
+        target = 2900;
     }
     public void PID() {
         pid.setPID(kp, ki, kd);
